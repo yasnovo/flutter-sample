@@ -1,116 +1,103 @@
-import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
+import 'package:flutter/material.dart';
+import 'package:myapp/Suggestion.dart';
+import 'package:myapp/bloc_favorite_page.dart';
+import 'package:myapp/count_label.dart';
+import 'package:myapp/word_bloc.dart';
+import 'package:myapp/word_item.dart';
+import 'package:myapp/word_provider.dart';
 
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Startup Name Generator',
-      theme: new ThemeData(
-        primaryColor: Colors.white,
-      ),
-      home: new RandomWords(),
-    );
-  }
-}
-
-class RandomWords extends StatefulWidget {
-  @override
-  createState() => new RandomWordState();
-}
-
-
-class RandomWordState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
-
-  final _saved = new Set<WordPair>();
-
-  final _biggerFont = const TextStyle(fontSize: 18.0);
-
-  void _pushSaved() {
-    Navigator.of(context).push(
-      new MaterialPageRoute (
-        builder: (context) {
-          final tiles = _saved.map(
-            (pair) {
-              return new ListTile(
-                title: new Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = ListTile
-            .divideTiles(
-              context: context,
-              tiles: tiles,
-            )
-            .toList();
-
-          return new Scaffold(
-            appBar: new AppBar(
-              title: new Text('Saved Suggestions'),
-            ),
-            body: new ListView(children: divided),
-          );
+    return WordProvider(
+      child: MaterialApp(
+        title: 'startup name generator',
+        theme: new ThemeData(primaryColor: Colors.white),
+        home: RandomWordsHomePage(),
+        routes: <String, WidgetBuilder>{
+          BlocFavoritePage.routeName: (context) {
+            return new BlocFavoritePage();
+          }
         },
       ),
     );
   }
+}
 
-  Widget _buildSuggestions() {
+class RandomWordsHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final wordBloc = WordProvider.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('startup name generator'), actions: <Widget>[
+        StreamBuilder<int>(
+            stream: wordBloc.itemCount,
+            initialData: 0,
+            builder: (context, snapshot) =>
+                CountLabel(favoriteCount: snapshot.data)),
+        new IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.of(context).pushNamed(BlocFavoritePage.routeName);
+            })
+      ]),
+      body: WordList(),
+    );
+  }
+}
+
+class WordList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return new ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemBuilder: (context, i){
-        if(i.isOdd) return new Divider();
+      itemBuilder: (context, i) {
+        if (i.isOdd) return new Divider();
 
         final index = i ~/ 2;
-        if(index >= _suggestions.length) {
-          _suggestions.addAll(generateWordPairs().take(10));
+        if (index >= suggestion.suggestionCount) {
+          const addNum = 10;
+          suggestion.addMulti(generateWordPairs().take(addNum).toList());
         }
-
-        return _buildRow(_suggestions[index]);
-
-    });
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Startup Name Generator'),
-        actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved,)
-        ],
-      ),
-      body: _buildSuggestions(),
+        return _buildRow(
+            WordProvider.of(context), suggestion.suggestedWords[index]);
+      },
     );
   }
+}
 
-  Widget _buildRow(WordPair pair){
-    final alreadySaved = _saved.contains(pair);
-    return new ListTile(
-      title: new Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
+Widget _buildRow(WordBloc word, WordPair pair) {
+  return new StreamBuilder<List<WordItem>>(
+      stream: word.items,
+      builder: (_, snapshot) {
+        if (snapshot.data == null || snapshot.data.isEmpty) {
+          return _createWordListTile(word, false, pair.asPascalCase);
+        } else {
+          final addedWord = snapshot.data.map((item) {
+            return item.name;
+          });
+          final alreadyAdded = addedWord.toString().contains(pair.asPascalCase);
+          return _createWordListTile(word, alreadyAdded, pair.asPascalCase);
+        }
+      });
+}
+
+ListTile _createWordListTile(WordBloc word, bool isFavorited, String title) {
+  return new ListTile(
+      title: new Text(title),
       trailing: new Icon(
-        alreadySaved ? Icons.favorite :Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
+        isFavorited ? Icons.favorite : Icons.favorite_border,
+        color: isFavorited ? Colors.red : null,
       ),
       onTap: () {
-        setState(() {
-          if(alreadySaved){
-            _saved.remove(pair);
-          }else{
-            _saved.add(pair);
-          }
-        });
-      }
-    );
-  }
-
+        if (isFavorited) {
+          word.wordRemoval.add(WordRemoval(title));
+        } else {
+          word.wordAddition.add(WordAddition(title));
+        }
+      });
 }

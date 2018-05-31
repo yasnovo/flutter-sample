@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:myapp/word.dart';
-import 'package:myapp/word_item.dart';
+import 'package:myapp/models/word.dart';
+import 'package:myapp/models/word_item.dart';
 import 'package:rxdart/subjects.dart';
 
 class WordAddition {

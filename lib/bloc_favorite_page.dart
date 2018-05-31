@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/word_item.dart';
+import 'package:myapp/models/word_item.dart';
 import 'package:myapp/word_provider.dart';
 
 class BlocFavoritePage extends StatelessWidget {

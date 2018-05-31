@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:myapp/word_item.dart';
+import 'package:myapp/models/word_item.dart';
 
 class Word {
   final List<WordItem> _items = <WordItem>[];
@@ -11,6 +11,8 @@ class Word {
   }
 
   int get itemCount => _items.length;
+
+  //int getItemCount()=> _items.length;
 
   UnmodifiableListView<WordItem> get items => UnmodifiableListView(_items);
 

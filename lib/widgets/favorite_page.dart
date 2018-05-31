@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/word.dart';
+import 'package:myapp/models/word.dart';
 
 class FavoritePage extends StatelessWidget {
   final Word word;

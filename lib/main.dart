@@ -1,10 +1,10 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/Suggestion.dart';
 import 'package:myapp/bloc_favorite_page.dart';
-import 'package:myapp/count_label.dart';
+import 'package:myapp/models/suggestion.dart';
+import 'package:myapp/models/word_item.dart';
+import 'package:myapp/widgets/count_label.dart';
 import 'package:myapp/word_bloc.dart';
-import 'package:myapp/word_item.dart';
 import 'package:myapp/word_provider.dart';
 
 void main() => runApp(new MyApp());
